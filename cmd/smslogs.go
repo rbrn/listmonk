@@ -2,9 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"net/http"
+
 	"github.com/knadh/listmonk/models"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type CampaignSmsWrap struct {
@@ -50,6 +51,47 @@ func handleGetSmsLogsByCampaignId(c echo.Context) error {
 
 	if len(out) != 1 {
 		app.log.Printf("error fetching campaign sms with id: %v", campaignId)
+		return c.JSON(http.StatusOK, okResp{[]struct{}{}})
+	}
+
+	out[0].Results = outResults
+
+	return c.JSON(http.StatusOK, okResp{out[0]})
+}
+
+// handleGetSmsLogsByUserId retrieves lists of campaign sms
+func handleGetSmsLogsByUserId(c echo.Context) error {
+	var (
+		app        = c.Get("app").(*App)
+		userid     = c.Param("userid")
+		out        []CampaignSmsWrap
+		outResults []models.CampaignSms
+	)
+
+	if err := app.queries.GetCampaignSmsCounts.Select(&out, userid); err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusOK, okResp{[]struct{}{}})
+		}
+
+		app.log.Printf("error fetching campaign sms counts: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError,
+			app.i18n.Ts("globals.messages.errorFetching",
+				"name", "{globals.terms.campaign}", "error", pqErrMsg(err)))
+	}
+
+	if err := app.queries.GetCampaignSmsLogsByUserId.Select(&outResults, userid); err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusOK, okResp{[]struct{}{}})
+		}
+
+		app.log.Printf("error fetching campaign sms logs: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError,
+			app.i18n.Ts("globals.messages.errorFetching",
+				"name", "{globals.terms.campaign}", "error", pqErrMsg(err)))
+	}
+
+	if len(out) != 1 {
+		app.log.Printf("error fetching campaign sms with id: %v", userid)
 		return c.JSON(http.StatusOK, okResp{[]struct{}{}})
 	}
 
