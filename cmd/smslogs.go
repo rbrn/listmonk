@@ -18,6 +18,13 @@ type CampaignSmsWrap struct {
 	CampaignAltBody string               `db:"altbody" json:"campaignAltBody"`
 }
 
+type CampaignSmsWrapByUserId struct {
+	Results   []models.CampaignSms `json:"results"`
+	Sent      int                  `db:"sent" json:"sent"`
+	Delivered int                  `db:"delivered" json:"delivered"`
+	Failed    int                  `db:"failed" json:"failed"`
+}
+
 // handleGetSmsLogsByCampaignId retrieves lists of campaign sms
 func handleGetSmsLogsByCampaignId(c echo.Context) error {
 	var (
@@ -64,11 +71,11 @@ func handleGetSmsLogsByUserId(c echo.Context) error {
 	var (
 		app        = c.Get("app").(*App)
 		userid     = c.Param("userid")
-		out        []CampaignSmsWrap
+		out        []CampaignSmsWrapByUserId
 		outResults []models.CampaignSms
 	)
 
-	if err := app.queries.GetCampaignSmsCounts.Select(&out, userid); err != nil {
+	if err := app.queries.GetCampaignSmsCountsByUserId.Select(&out, userid); err != nil {
 		if err == sql.ErrNoRows {
 			return c.JSON(http.StatusOK, okResp{[]struct{}{}})
 		}
