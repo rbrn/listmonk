@@ -832,7 +832,7 @@ SELECT * FROM campaign_sms WHERE userid = $1;
 SELECT count(*) as sent,
        COUNT(CASE WHEN status = 'Success' THEN 1 ELSE NULL END) as delivered,
        COUNT(CASE WHEN status != 'Success' THEN 1 ELSE NULL END) as failed
-from campaign_sms WHERE userid = $1;
+from campaign_sms WHERE userid = $1 group by campaign_id;
 
 -- users
 -- name: get-users
