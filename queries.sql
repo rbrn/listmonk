@@ -828,12 +828,6 @@ SELECT s.*, c.name, COALESCE(c.altbody, '') AS altbody FROM campaign_stats s LEF
 -- name: get-campaign-sms-logs-by-userid
 SELECT * FROM campaign_sms WHERE userid = $1;
 
--- name: get-campaign-sms-counts
-SELECT count(*) as sent,
-       COUNT(CASE WHEN status = 'Success' THEN 1 ELSE NULL END) as delivered,
-       COUNT(CASE WHEN status != 'Success' THEN 1 ELSE NULL END) as failed
-from campaign_sms WHERE userid = $1;
-
 -- users
 -- name: get-users
 SELECT * FROM users WHERE $1 = 0 OR id = $1 OFFSET $2 LIMIT $3;
