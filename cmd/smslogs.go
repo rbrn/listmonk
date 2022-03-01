@@ -90,6 +90,11 @@ func handleGetSmsLogsByUserId(c echo.Context) error {
 				"name", "{globals.terms.campaign}", "error", pqErrMsg(err)))
 	}
 
+	if len(out) != 1 {
+		app.log.Printf("error fetching campaign sms with id: %v", userid)
+		return c.JSON(http.StatusOK, okResp{[]struct{}{}})
+	}
+
 	out[0].Results = outResults
 
 	return c.JSON(http.StatusOK, okResp{out[0]})
